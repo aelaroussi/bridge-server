@@ -46,7 +46,7 @@
             font-family: inherit; /* Inherit JetBrains Mono */
         }
 
-        input:hover, input:focus{
+        input:hover, input:focus, button:hover, button:focus{
             outline: 1px solid #b1b1b1;
         }
 
@@ -71,10 +71,6 @@
             font-family: inherit;
             font-weight: bold;
             white-space: nowrap; /* Prevent text wrapping */
-        }
-
-        button:hover {
-            background: #005f9e;
         }
 
         .log {
@@ -130,11 +126,13 @@
 
     <br>
     
-    <form method='POST'>
-        <input type='password' name='token' placeholder='Secret Token' value="{{ token_value }}" required>
-        <input type='text' name='cmd' placeholder='Enter command (e.g. ls -la)' autofocus required>
-        <button type='submit'>Run</button>
-    </form>
+ <form method='POST'>
+    <input type='password' name='token' placeholder='Secret Token' value="{{ token_value }}" required>
+    <input type='text' name='cmd' placeholder='Enter command (e.g. ls -la)' autofocus required
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+           
+    <button type='submit'>Run</button>
+</form>
 
     <div class="log">
         {% for entry in results|reverse %}
