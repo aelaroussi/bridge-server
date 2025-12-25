@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Remote Shell</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #ddd;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        input {
+            padding: 10px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        input[type="text"] {
+            width: 60%;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007acc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #005f9e;
+        }
+
+        .log {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+        }
+
+        .entry {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .cmd-line {
+            color: #0f0;
+            font-weight: bold;
+        }
+
+        .status-success, .status-error{
+            border-radius: 4px;
+        }
+
+        .status-error {
+            color: red;
+            background: #300;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-success {
+            color: #0f0;
+            background: #030;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        hr {
+            border-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>💻 Remote Shell Control</h2>
+
+    {% if status_error %}
+    <div class="status-error">❌ {{ status_error }}</div>
+    {% elif status_success %}
+    <div class="status-success">✅ Command '<b>{{ status_success }}</b>' queued!</div>
+    {% endif %}
+
+    <br>
+    <form method='POST'>
+        <input type='password' name='token' placeholder='Secret Token' value="{{ token_value }}" required>
+        <input type='text' name='cmd' placeholder='Enter command (e.g. ls -la)' autofocus required>
+        <button type='submit'>Run</button>
+    </form>
+
+    <h3>📋 Output</h3>
+    <div class="log">
+        {% for entry in results|reverse %}
+        <div class='entry'>
+            <div class='cmd-line'>$ {{ entry.cmd }}</div>
+            {{ entry.output }}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>
