@@ -8,17 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        *, *::before, *::after{
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             outline: none;
         }
 
-        ::selection{
+        ::selection {
             background-color: white;
             color: black;
         }
 
         body {
+            font-size: .8rem;
             font-family: 'JetBrains Mono', monospace;
             background: #1a1a1a;
             color: #ddd;
@@ -69,7 +72,8 @@
             border-radius: 4px;
             font-family: inherit;
             font-weight: bold;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
+            /* Prevent text wrapping */
         }
 
         .error {
@@ -177,7 +181,8 @@
     </div>
     {% else %}
     <div class="output-panel">
-        <div class="output-content" style="text-align: center;  color: #555;">No commands executed yet (or token missing).</div>
+        <div class="output-content" style="text-align: center;  color: #555;">No commands executed yet (or token
+            missing).</div>
     </div>
     {% endif %}
 
