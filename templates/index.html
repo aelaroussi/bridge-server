@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-
         *, *::before, *::after{
             box-sizing: border-box;
             outline: none;
@@ -20,19 +19,18 @@
         }
 
         body {
-            /* 2. Apply the font */
             font-family: 'JetBrains Mono', monospace;
             background: #1a1a1a;
             color: #ddd;
             padding: 20px;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: auto;
         }
 
-        /* 3. New Flexbox Layout for the Form */
         form {
             display: flex;
-            gap: 10px; /* Space between elements */
+            flex-direction: column;
+            gap: 10px;
             width: 100%;
             margin-bottom: 2rem;
         }
@@ -43,20 +41,18 @@
             border: 1px solid #555;
             color: #fff;
             border-radius: 4px;
-            font-family: inherit; /* Inherit JetBrains Mono */
+            font: inherit;
+            display: block;
         }
 
         input:hover, input:focus, button:hover, button:focus{
             outline: 1px solid #b1b1b1;
         }
 
-        /* Fixed width for token so it doesn't get too small */
         input[type="password"] {
-            width: 150px; 
             flex-shrink: 0; 
         }
 
-        /* 4. Make the command input fill ALL remaining space */
         input[type="text"] {
             flex-grow: 1;
         }
@@ -71,7 +67,7 @@
             font-family: inherit;
             font-weight: bold;
             white-space: nowrap; /* Prevent text wrapping */
-        }
+            }
 
         .log {
             background: #000;
@@ -79,7 +75,7 @@
             border-radius: 4px;
             border: 1px solid #333;
             white-space: pre-wrap;
-            font-size: 0.9em; /* Monospace looks better slightly smaller */
+            font-size: 0.9em;
         }
 
         .entry {
@@ -98,7 +94,7 @@
         }
 
         .status-error {
-            color: #ff6b6b; /* Softer red for dark mode */
+            color: #ff6b6b;
             background: #4a1b1b;
             padding: 10px;
             margin-bottom: 10px;
@@ -106,7 +102,7 @@
         }
 
         .status-success {
-            color: #51cf66; /* Softer green */
+            color: #51cf66;
             background: #1b4a2e;
             padding: 10px;
             margin-bottom: 10px;
