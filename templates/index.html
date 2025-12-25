@@ -3,12 +3,22 @@
 
 <head>
     <title>Remote Shell</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
+
+        *, *::before, *::after{
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        ::selection{
+            background-color: white;
+            color: black;
+        }
+
         body {
             /* 2. Apply the font */
             font-family: 'JetBrains Mono', monospace;
@@ -24,6 +34,7 @@
             display: flex;
             gap: 10px; /* Space between elements */
             width: 100%;
+            margin-bottom: 2rem;
         }
 
         input {
@@ -33,6 +44,10 @@
             color: #fff;
             border-radius: 4px;
             font-family: inherit; /* Inherit JetBrains Mono */
+        }
+
+        input:hover, input:focus{
+            outline: 1px solid #b1b1b1;
         }
 
         /* Fixed width for token so it doesn't get too small */
@@ -101,16 +116,11 @@
             margin-bottom: 10px;
             border: 1px solid #51cf66;
         }
-
-        hr {
-            border-color: #333;
-            margin: 20px 0;
-        }
     </style>
 </head>
 
 <body>
-    <h2>💻 Remote Shell Control</h2>
+    <h2>Remote Shell Control</h2>
 
     {% if status_error %}
     <div class="status-error">❌ {{ status_error }}</div>
@@ -126,9 +136,6 @@
         <button type='submit'>Run</button>
     </form>
 
-    <hr>
-
-    <h3>📋 Output</h3>
     <div class="log">
         {% for entry in results|reverse %}
         <div class='entry'>
