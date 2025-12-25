@@ -8,9 +8,7 @@ app = Flask(__name__)
 SECRET_TOKEN = os.environ.get("SECRET_TOKEN", "unsafe_default")
 
 # DATA STRUCTURES
-# commands_log: Stores the full history (id, timestamp, cmd, status, output)
 commands_log = [] 
-# cmd_queue: Stores just the IDs of commands waiting to be picked up
 cmd_queue = []
 
 @app.route('/')
@@ -19,34 +17,43 @@ def index():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    # 1. Get Token (Check URL args first for auto-refresh, then Form)
+    # 1. Get Token from URL or Form
     token_val = request.args.get('token') or request.form.get('token') or ""
     
     error = None
     success_msg = None
     last_command = None
 
-    # 2. Handle New Command Submission
+    # 2. Handle POST (Form Submission)
     if request.method == 'POST':
         cmd_input = request.form.get('cmd')
         
         if token_val != SECRET_TOKEN:
             error = "INVALID TOKEN"
         elif cmd_input:
-            # Create a new command object
-            cmd_id = str(uuid.uuid4())[:8] # Short random ID
+            # Create command
+            cmd_id = str(uuid.uuid4())[:8]
             new_cmd = {
                 "id": cmd_id,
                 "timestamp": datetime.datetime.now().strftime("%H:%M:%S"),
                 "cmd": cmd_input,
-                "status": "queued", # queued -> sent -> executed
+                "status": "queued",
                 "output": None
             }
             commands_log.append(new_cmd)
             cmd_queue.append(cmd_id)
-            success_msg = f"Command '{cmd_input}' queued (ID: {cmd_id})"
+            
+            # --- THE FIX: Redirect to GET so we can refresh safely ---
+            return redirect(url_for('admin', token=token_val, new_id=cmd_id))
 
-    # 3. Retrieve Last Command (If token is valid)
+    # 3. Handle GET (Page View)
+    
+    # Check if we just redirected from a successful submission
+    new_id = request.args.get('new_id')
+    if new_id:
+        success_msg = f"Command queued (ID: {new_id})"
+
+    # Retrieve Last Command Logic
     if token_val == SECRET_TOKEN and commands_log:
         last_command = commands_log[-1]
     elif token_val and token_val != SECRET_TOKEN:
@@ -54,7 +61,7 @@ def admin():
 
     return render_template(
         'index.html', 
-        last_command=last_command, # Only sending the LATEST command
+        last_command=last_command,
         status_error=error, 
         status_success=success_msg,
         token_value=token_val
@@ -65,9 +72,6 @@ def history():
     token_val = request.args.get('token')
     if token_val != SECRET_TOKEN:
         return "<h1>Unauthorized</h1><p>Invalid Token</p>"
-    
-    # Return full log, but we generally don't show massive outputs here to keep it clean
-    # We reverse it to show newest first
     return render_template('history.html', history=reversed(commands_log), token_value=token_val)
 
 # --- AGENT API ---
@@ -78,10 +82,7 @@ def poll():
         return jsonify({"error": "Unauthorized"}), 403
     
     if cmd_queue:
-        # Get the ID of the next command
         next_id = cmd_queue.pop(0)
-        
-        # Find the command object and mark as sent
         for cmd in commands_log:
             if cmd['id'] == next_id:
                 cmd['status'] = 'sent'
@@ -98,14 +99,11 @@ def report():
     if data:
         cmd_id = data.get('id')
         output = data.get('output')
-        
-        # Find the command by ID and update it
         for cmd in commands_log:
             if cmd['id'] == cmd_id:
                 cmd['status'] = 'executed'
                 cmd['output'] = output
                 break
-                
     return "OK"
 
 if __name__ == '__main__':
