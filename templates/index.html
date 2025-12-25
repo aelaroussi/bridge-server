@@ -3,14 +3,27 @@
 
 <head>
     <title>Remote Shell</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: monospace;
+            /* 2. Apply the font */
+            font-family: 'JetBrains Mono', monospace;
             background: #1a1a1a;
             color: #ddd;
             padding: 20px;
             max-width: 1000px;
             margin: auto;
+        }
+
+        /* 3. New Flexbox Layout for the Form */
+        form {
+            display: flex;
+            gap: 10px; /* Space between elements */
+            width: 100%;
         }
 
         input {
@@ -19,19 +32,30 @@
             border: 1px solid #555;
             color: #fff;
             border-radius: 4px;
+            font-family: inherit; /* Inherit JetBrains Mono */
         }
 
+        /* Fixed width for token so it doesn't get too small */
+        input[type="password"] {
+            width: 150px; 
+            flex-shrink: 0; 
+        }
+
+        /* 4. Make the command input fill ALL remaining space */
         input[type="text"] {
-            width: 60%;
+            flex-grow: 1;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 10px 25px;
             background: #007acc;
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 4px;
+            font-family: inherit;
+            font-weight: bold;
+            white-space: nowrap; /* Prevent text wrapping */
         }
 
         button:hover {
@@ -44,6 +68,7 @@
             border-radius: 4px;
             border: 1px solid #333;
             white-space: pre-wrap;
+            font-size: 0.9em; /* Monospace looks better slightly smaller */
         }
 
         .entry {
@@ -62,21 +87,24 @@
         }
 
         .status-error {
-            color: red;
-            background: #300;
+            color: #ff6b6b; /* Softer red for dark mode */
+            background: #4a1b1b;
             padding: 10px;
             margin-bottom: 10px;
+            border: 1px solid #ff6b6b;
         }
 
         .status-success {
-            color: #0f0;
-            background: #030;
+            color: #51cf66; /* Softer green */
+            background: #1b4a2e;
             padding: 10px;
             margin-bottom: 10px;
+            border: 1px solid #51cf66;
         }
 
         hr {
             border-color: #333;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -91,11 +119,14 @@
     {% endif %}
 
     <br>
+    
     <form method='POST'>
         <input type='password' name='token' placeholder='Secret Token' value="{{ token_value }}" required>
         <input type='text' name='cmd' placeholder='Enter command (e.g. ls -la)' autofocus required>
         <button type='submit'>Run</button>
     </form>
+
+    <hr>
 
     <h3>📋 Output</h3>
     <div class="log">
