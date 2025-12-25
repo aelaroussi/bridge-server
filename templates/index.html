@@ -146,8 +146,8 @@
 
 <body>
     <div class="top-nav">
-        <h2>Remote Shell</h2><a href="#" id="historyLink">History</a>
-    </div>{% if status_error %}<div class="status-box error">❌ {{ status_error }}</div>{% elif status_success %}<div
+        <h2>Remote Shell</h2>
+        <div><a href="/history">History</a> <span style="color:#555">|</span> <a href="/logout" style="color:#666">Logout</a></div></div>{% if status_error %}<div class="status-box error">❌ {{ status_error }}</div>{% elif status_success %}<div
         class="status-box success">✅ {{ status_success }}</div>{% endif %}<form method='POST' id="cmdForm"><input
             type='password' name='token' id="tokenInput" placeholder='Secret Token' value="{{ token_value }}"
             required><input type='text' name='cmd' id="cmdInput" placeholder='Enter command...' autofocus required
@@ -160,7 +160,6 @@
     </div>{% else %}<div class="output-panel">
         <div class="output-content" style="text-align:center;color:#555;">No commands executed yet (or token missing).</div>
     </div>{% endif %}
-    <script>const tokenInput = document.getElementById('tokenInput'); const cmdForm = document.getElementById('cmdForm'); const historyLink = document.getElementById('historyLink'); const savedToken = sessionStorage.getItem('shell_token'); if (!tokenInput.value && savedToken) { tokenInput.value = savedToken } cmdForm.addEventListener('submit', () => { if (tokenInput.value) { sessionStorage.setItem('shell_token', tokenInput.value) } }); historyLink.addEventListener('click', (e) => { e.preventDefault(); const token = tokenInput.value; window.location.href = "/history?token=" + encodeURIComponent(token) });</script>
 </body>
 
 </html>
