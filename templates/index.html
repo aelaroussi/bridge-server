@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Remote Shell</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
@@ -8,18 +7,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            outline: none
-        }
-
-        ::selection {
-            background-color: white;
-            color: black
-        }
-
+        *, *::before, *::after { box-sizing: border-box; outline: none; }
+        ::selection { background-color: white; color: black; }
+        
         body {
             font-size: .8rem;
             font-family: 'JetBrains Mono', monospace;
@@ -27,7 +17,7 @@
             color: #ddd;
             padding: 20px;
             max-width: 1200px;
-            margin: auto
+            margin: auto;
         }
 
         form {
@@ -35,7 +25,38 @@
             flex-direction: column;
             gap: 10px;
             width: 100%;
-            margin-bottom: 2rem
+            margin-bottom: 1rem;
+        }
+
+        /* Quick Actions Bar */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #2d2d2d;
+            border: none;
+            color: #aaa;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            background: #333;
+            color: #fff;
+            border-color: #666;
+        }
+
+        .action-btn.danger:hover {
+            background: #4a1b1b;
+            color: #ff6b6b;
+            border-color: #ff6b6b;
         }
 
         input {
@@ -45,25 +66,17 @@
             color: #fff;
             border-radius: 4px;
             font: inherit;
-            display: block
+            display: block;
         }
 
-        input:hover,
-        input:focus,
-        button:hover,
-        button:focus {
-            outline: 1px solid #b1b1b1
+        input:hover, input:focus, button:hover, button:focus {
+            outline: 1px solid #b1b1b1;
         }
 
-        input[type="password"] {
-            flex-shrink: 0
-        }
+        input[type="password"] { flex-shrink: 0; }
+        input[type="text"] { flex-grow: 1; }
 
-        input[type="text"] {
-            flex-grow: 1
-        }
-
-        button {
+        button.run-btn {
             padding: 10px 25px;
             background: #007acc;
             color: white;
@@ -72,100 +85,103 @@
             border-radius: 4px;
             font-family: inherit;
             font-weight: bold;
-            white-space: nowrap
+            white-space: nowrap;
         }
 
-        .error {
-            background: #4a1b1b;
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b
-        }
-
-        .success {
-            background: #1b4a2e;
-            color: #51cf66;
-            border: 1px solid #51cf66
-        }
-
-        .status-box {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px
-        }
+        .error { background: #4a1b1b; color: #ff6b6b; border: 1px solid #ff6b6b; }
+        .success { background: #1b4a2e; color: #51cf66; border: 1px solid #51cf66; }
+        .status-box { padding: 10px; border-radius: 4px; margin-bottom: 15px; }
 
         .output-panel {
             background: #000;
             padding: 15px;
             border-radius: 4px;
-            border: 1px solid #333
+            border: 1px solid #333;
         }
 
-        .output-content {
-            white-space: pre-wrap;
-            font-size: 0.9em;
-            color: #ccc
-        }
-
+        .output-content { white-space: pre-wrap; font-size: 0.9em; color: #ccc; }
+        
         .badge {
             padding: 2px 6px;
-            border-radius: 3px;
+            border-radius: 4px;
             font-size: 0.8em;
-            text-transform: uppercase
+            text-transform: uppercase;
         }
 
-        .st-queued {
-            background: #b19918;
-            color: black
-        }
-
-        .st-sent {
-            background: #187ab1;
-            color: white
-        }
-
-        .st-executed {
-            background: #18b139;
-            color: black
-        }
+        .st-queued { background: #b19918; color: black; }
+        .st-sent { background: #187ab1; color: white; }
+        .st-executed { background: #18b139; color: black; }
 
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px
+            margin-bottom: 20px;
         }
 
-        a {
-            color: #007acc;
-            text-decoration: none
-        }
-
-        a:hover,
-        a:focus {
-            text-decoration: underline
-        }
+        a { color: #007acc; text-decoration: none; }
+        a:hover, a:focus { text-decoration: underline; }
     </style>
 </head>
 
 <body>
     <div class="top-nav">
         <h2>Remote Shell</h2>
-        <div>{% if is_authenticated %}<a href="/history">History</a> <span style="color:#555">|</span> <a href="/logout"
-                style="color:#666">Logout</a>{% endif %}</div>
-    </div>{% if status_error %}<div class="status-box error">❌ {{ status_error }}</div>{% elif status_success %}<div
-        class="status-box success">✅ {{ status_success }}</div>{% endif %}<form method='POST' id="cmdForm"><input
-            type='password' name='token' id="tokenInput" placeholder='Secret Token' value="{{ token_value }}"
-            required><input type='text' name='cmd' id="cmdInput"
-            placeholder='Enter command (or leave empty to login)...' autocomplete="off"><button
-            type='submit'>Run</button></form>{% if last_command %}<div class="output-panel">
-        <div style="margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:5px;"><span style="color:#888;">[{{
-                last_command.timestamp }}]</span><strong style="color:#fff;">$ {{ last_command.cmd }}</strong><span
-                class="badge st-{{ last_command.status }}" style="float:right">{{ last_command.status }}</span></div>
-        <div class="output-content">{% if last_command.output %}{{ last_command.output }}{% else %}<span
-                style="color:#666;font-style:italic;">... waiting for response ...</span>{% endif %}</div>
-    </div>{% else %}<div class="output-panel">
-        <div class="output-content" style="text-align:center;color:#555;">No commands executed yet (or not logged in).</div>
-    </div>{% endif %}
-</body>
+        <div>{% if is_authenticated %}<a href="/history">History</a> <span style="color:#555">|</span> <a href="/logout" style="color:#666">Logout</a>{% endif %}</div>
+    </div>
 
+    {% if status_error %}
+        <div class="status-box error">❌ {{ status_error }}</div>
+    {% elif status_success %}
+        <div class="status-box success">✅ {{ status_success }}</div>
+    {% endif %}
+
+    <form method='POST' id="cmdForm">
+        <input type='password' name='token' id="tokenInput" placeholder='Secret Token' value="{{ token_value }}" required>
+        <input type='text' name='cmd' id="cmdInput" placeholder='Enter command (or leave empty to login)...' autocomplete="off">
+        <button type='submit' class="run-btn">Run</button>
+    </form>
+
+    <div class="quick-actions">
+        <button type="button" class="action-btn danger" onclick="runCmd('ft_lock || /usr/local/bin/ft_lock || /usr/share/42/ft_lock')">🔒 Lock Screen</button>
+        
+        <button type="button" class="action-btn danger" onclick="runCmd('gnome-session-quit --no-prompt')">🚪 Logout User</button>
+        
+        <button type="button" class="action-btn" onclick="runCmd('hostname && echo --- && hostname -I')">🏷️ Host & IP</button>
+        <button type="button" class="action-btn" onclick="runCmd('uptime')">⏱️ Uptime</button>
+        <button type="button" class="action-btn" onclick="runCmd('ls -la')">📂 List Files</button>
+    </div>
+
+    {% if last_command %}
+    <div class="output-panel">
+        <div style="margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:5px;">
+            <span style="color:#888;">[{{ last_command.timestamp }}]</span>
+            <strong style="color:#fff;">$ {{ last_command.cmd }}</strong>
+            <span class="badge st-{{ last_command.status }}" style="float:right">{{ last_command.status }}</span>
+        </div>
+        <div class="output-content">{% if last_command.output %}{{ last_command.output }}{% else %}<span style="color:#666;font-style:italic;">... waiting for response ...</span>{% endif %}</div>
+    </div>
+    {% else %}
+    <div class="output-panel">
+        <div class="output-content" style="text-align:center;color:#555;">No commands executed yet (or not logged in).</div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Helper function to insert command and submit immediately
+        function runCmd(command) {
+            const input = document.getElementById('cmdInput');
+            const token = document.getElementById('tokenInput');
+            
+            // Only run if token is present
+            if(token.value) {
+                input.value = command;
+                document.getElementById('cmdForm').submit();
+            } else {
+                alert("Please enter your Secret Token first.");
+                token.focus();
+            }
+        }
+    </script>
+</body>
 </html>
