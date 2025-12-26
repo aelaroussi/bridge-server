@@ -6,10 +6,7 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, s
 app = Flask(__name__)
 
 # CONFIGURATION
-# 1. Session Key: Encrypts your cookies.
 app.secret_key = os.urandom(24) 
-
-# 2. The Main Secret: Used to authenticate the agent and the web user.
 SECRET_TOKEN = os.environ.get("SECRET_TOKEN", "unsafe_default")
 
 # DATA STRUCTURES
@@ -22,72 +19,70 @@ def index():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    error = None
-    success_msg = None
-    last_command = None
-    
-    # 1. AUTHENTICATION LOGIC
-    # Check if we already have a valid session
-    user_token = session.get('token')
-
-    # If this is a POST (Form Submit), check if they provided a new token
+    # 1. HANDLE POST (Form Submissions)
     if request.method == 'POST':
         form_token = request.form.get('token')
         cmd_input = request.form.get('cmd')
 
-        # Prioritize the form token if provided
-        if form_token:
-            if form_token == SECRET_TOKEN:
-                session['token'] = form_token # Login successful, save to session
-                user_token = form_token
-            else:
-                error = "INVALID TOKEN"
+        # Check Token
+        if form_token != SECRET_TOKEN:
+            # ERROR: Redirect to GET with error flag (Avoids "Confirm Resubmission")
+            return redirect(url_for('admin', error='invalid'))
         
-        # If we are authenticated (either via session or just now), process command
-        if user_token == SECRET_TOKEN and not error:
-            if cmd_input:
-                cmd_id = str(uuid.uuid4())[:8]
-                new_cmd = {
-                    "id": cmd_id,
-                    "timestamp": datetime.datetime.now().strftime("%H:%M:%S"),
-                    "cmd": cmd_input,
-                    "status": "queued",
-                    "output": None
-                }
-                commands_log.append(new_cmd)
-                cmd_queue.append(cmd_id)
-                # Redirect to GET to prevent form resubmission warning
-                # Note: We do NOT pass the token in the URL anymore
-                return redirect(url_for('admin', new_id=cmd_id))
-        elif not error:
-            error = "MISSING OR INVALID TOKEN"
+        # SUCCESS: Update Session
+        session['token'] = form_token
+        
+        # Process Command (if provided)
+        if cmd_input:
+            cmd_id = str(uuid.uuid4())[:8]
+            new_cmd = {
+                "id": cmd_id,
+                "timestamp": datetime.datetime.now().strftime("%H:%M:%S"),
+                "cmd": cmd_input,
+                "status": "queued",
+                "output": None
+            }
+            commands_log.append(new_cmd)
+            cmd_queue.append(cmd_id)
+            return redirect(url_for('admin', new_id=cmd_id))
+        
+        # Login Only (No command): Redirect to refresh page state
+        return redirect(url_for('admin'))
 
-    # 2. GET REQUEST LOGIC
-    # Retrieve status message from URL (e.g. ?new_id=123)
+    # 2. HANDLE GET (Page View)
+    user_token = session.get('token')
+    is_authenticated = (user_token == SECRET_TOKEN)
+    
+    error = None
+    success_msg = None
+    last_command = None
+
+    # Check URL args for status messages
+    if request.args.get('error') == 'invalid':
+        error = "INVALID TOKEN"
+    
     new_id = request.args.get('new_id')
     if new_id:
         success_msg = f"Command queued (ID: {new_id})"
 
-    # Retrieve Last Command (Only if authenticated)
-    if user_token == SECRET_TOKEN and commands_log:
-        last_command = commands_log[-1]
-
+    # Retrieve Data if Authenticated
+    if is_authenticated:
+        if commands_log:
+            last_command = commands_log[-1]
+    
     return render_template(
         'index.html', 
         last_command=last_command,
         status_error=error, 
         status_success=success_msg,
-        # We pass the token back to the view to pre-fill the input 
-        # so the user knows they are logged in, but it's optional now
-        token_value=user_token or "" 
+        token_value=user_token or "",
+        is_authenticated=is_authenticated
     )
 
 @app.route('/history')
 def history():
-    # Check Session Cookie
     if session.get('token') != SECRET_TOKEN:
         return "<h1>Unauthorized</h1><p>Please login at the <a href='/admin'>Dashboard</a> first.</p>"
-    
     return render_template('history.html', history=reversed(commands_log))
 
 @app.route('/logout')
@@ -95,7 +90,7 @@ def logout():
     session.pop('token', None)
     return redirect(url_for('admin'))
 
-# --- AGENT API (Uses Headers, Safe) ---
+# --- AGENT API ---
 
 @app.route('/poll', methods=['GET'])
 def poll():

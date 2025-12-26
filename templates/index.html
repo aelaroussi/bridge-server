@@ -138,8 +138,10 @@
             color: #007acc;
             text-decoration: none
         }
-        a:hover, a:focus{
-            text-decoration: underline;
+
+        a:hover,
+        a:focus {
+            text-decoration: underline
         }
     </style>
 </head>
@@ -147,18 +149,22 @@
 <body>
     <div class="top-nav">
         <h2>Remote Shell</h2>
-        <div><a href="/history">History</a> <span style="color:#555">|</span> <a href="/logout" style="color:#666">Logout</a></div></div>{% if status_error %}<div class="status-box error">❌ {{ status_error }}</div>{% elif status_success %}<div
+        <div>{% if is_authenticated %}<a href="/history">History</a> <span style="color:#555">|</span> <a href="/logout"
+                style="color:#666">Logout</a>{% endif %}</div>
+    </div>{% if status_error %}<div class="status-box error">❌ {{ status_error }}</div>{% elif status_success %}<div
         class="status-box success">✅ {{ status_success }}</div>{% endif %}<form method='POST' id="cmdForm"><input
             type='password' name='token' id="tokenInput" placeholder='Secret Token' value="{{ token_value }}"
-            required><input type='text' name='cmd' id="cmdInput" placeholder='Enter command...' autofocus required
-            autocomplete="off"><button type='submit'>Run</button></form>{% if last_command %}<div class="output-panel">
+            required><input type='text' name='cmd' id="cmdInput"
+            placeholder='Enter command (or leave empty to login)...' autocomplete="off"><button
+            type='submit'>Run</button></form>{% if last_command %}<div class="output-panel">
         <div style="margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:5px;"><span style="color:#888;">[{{
                 last_command.timestamp }}]</span><strong style="color:#fff;">$ {{ last_command.cmd }}</strong><span
                 class="badge st-{{ last_command.status }}" style="float:right">{{ last_command.status }}</span></div>
         <div class="output-content">{% if last_command.output %}{{ last_command.output }}{% else %}<span
                 style="color:#666;font-style:italic;">... waiting for response ...</span>{% endif %}</div>
     </div>{% else %}<div class="output-panel">
-        <div class="output-content" style="text-align:center;color:#555;">No commands executed yet (or token missing).</div>
+        <div class="output-content" style="text-align:center;color:#555;">No commands executed yet (or not logged in).
+        </div>
     </div>{% endif %}
 </body>
 
